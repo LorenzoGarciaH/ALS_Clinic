@@ -9,8 +9,5 @@
         <module name="ALS_Clinic" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="ALS_Clinic" target="19" />
-    </bytecodeTargetLevel>
   </component>
 </project>
