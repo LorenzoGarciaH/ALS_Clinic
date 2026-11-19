@@ -14,6 +14,7 @@ public class HospitalServer {
            }
        }catch (Exception e) {
            System.out.println("Error al iniciar el servidor: " + e.getMessage());
+
        }
     }
 }
