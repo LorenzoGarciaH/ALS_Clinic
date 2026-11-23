@@ -1,0 +1,12 @@
+{"type":"START_SESSION","patientId":"test-patient","sessionId":"demo-001"}
+{"type":"START_SESSION","patientId":"test-patient","sessionId":"demo-001"}
+{"type":"START_SESSION","patientId":"test-patient","sessionId":"demo-001"}
+{"type":"START_SESSION","patientId":"test-patient","sessionId":"demo-001"}
+{"type":"PATIENT_REPORT","patientId":"test-patient","sessionId":"demo-001","symptoms":"Hand fatigue after writing"}
+{"type":"START_SESSION","patientId":"test-patient","sessionId":"demo-001"}
+{"type":"PATIENT_REPORT","patientId":"test-patient","sessionId":"demo-001","symptoms":"Hand fatigue after writing"}
+{"type":"MEASUREMENT","patientId":"test-patient","sessionId":"demo-001","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"START_SESSION","patientId":"test-patient","sessionId":"demo-001"}
+{"type":"PATIENT_REPORT","patientId":"test-patient","sessionId":"demo-001","symptoms":"Hand fatigue after writing"}
+{"type":"MEASUREMENT","patientId":"test-patient","sessionId":"demo-001","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"END_SESSION","patientId":"test-patient","sessionId":"demo-001"}
