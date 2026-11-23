@@ -11,6 +11,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 
 
 public class ClientHandler implements Runnable {
@@ -30,16 +32,27 @@ public class ClientHandler implements Runnable {
                     String patientId = required(message, "patientId");
                     String sessionId = required(message, "sessionId");
                     switch (type){
-                        case "START_SESSION":
                         case "PATIENT_REPORT":
+                            required(message, "symptoms");
+                            String submittedAt = required(message, "submittedAt");
+
+                            try {
+                                Instant.parse(submittedAt);
+                            } catch (DateTimeParseException e) {
+                                throw new IllegalArgumentException(
+                                        "submittedAt must be a valid timestamp, for example 2026-11-23T10:15:30Z");
+                            }
+
+                            break;
+                        case "START_SESSION":
                         case "MEASUREMENT":
                         case "END_SESSION":
-                            storage.save(patientId, sessionId, message.toString());
-                            output.println("OK");
                             break;
                         default:
-                            output.println("Error: Invalid message type: " + type);
+                            throw new IllegalArgumentException("Invalid message type: " + type);
                     }
+                    storage.save(patientId, sessionId, message.toString());
+                    output.println("OK");
                 } catch (IllegalArgumentException|IllegalStateException|IOException e) {
                     output.println("Error: " + e.getMessage());
                 }
