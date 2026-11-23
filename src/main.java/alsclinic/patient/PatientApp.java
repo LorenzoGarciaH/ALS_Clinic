@@ -4,49 +4,71 @@ import java.io.*;
 import java.net.Socket;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import java.util.Scanner;
+import java.util.UUID;
 
 public class PatientApp {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args)  {
+        Scanner console = new Scanner(System.in);
+
+        System.out.print("Patient ID: ");
+        String patientId = console.nextLine().trim();
+
+        if (!patientId.matches("[A-Za-z0-9_-]{1,64}")) {
+            System.out.println("Use 1–64 letters, digits, underscores, or hyphens.");
+            return;
+        }
+
+        System.out.print("Symptoms: ");
+        String symptoms = console.nextLine().trim();
+
+        if (symptoms.isEmpty()) {
+            System.out.println("Enter a symptom report or type 'No symptoms'.");
+            return;
+        }
+
+        String sessionId = UUID.randomUUID().toString();
+        System.out.println("Session ID: " + sessionId);
         try (Socket socket = new Socket("localhost", 9000);) {
             System.out.println("connected to " + socket.getInetAddress().getHostName());
             PrintWriter output = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 
-            String message = """
-                    {"type":"START_SESSION","patientId":"test-patient","sessionId":"demo-001"}""" ;
-            output.println(message);
+            // START_SESSION
+            JsonObject start = createMessage("START_SESSION", patientId, sessionId);
+            output.println(start.toString());
 
-            String reply = input.readLine();
-            System.out.println("server response: " + reply);
+            // PATIENT_REPORT
+            JsonObject report = createMessage("PATIENT_REPORT", patientId, sessionId);
+            report.addProperty("symptoms", symptoms);
+            output.println(report.toString());
 
-            String report = """
-        {"type":"PATIENT_REPORT","patientId":"test-patient","sessionId":"demo-001","symptoms":"Hand fatigue after writing"}""";
+            // MEASUREMENT
+            Gson gson = new Gson();
+            JsonObject measurement = createMessage("MEASUREMENT", patientId, sessionId);
+            measurement.add("eeg", gson.toJsonTree(new int[]{512, 514, 511}));
+            measurement.add("emg", gson.toJsonTree(new int[]{500, 530, 502}));
+            output.println(measurement.toString());
 
-            output.println(report);
-            String reportReply = input.readLine();
-            System.out.println("Report response: " + reportReply);
+            // END_SESSION
+            JsonObject end = createMessage("END_SESSION", patientId, sessionId);
+            output.println(end.toString());
 
-            if ("OK".equals(reportReply)) {
-                String measurement = """
-            {"type":"MEASUREMENT","patientId":"test-patient","sessionId":"demo-001","eeg":[512,514,511],"emg":[500,530,502]}""";
-
-                output.println(measurement);
-                String measurementReply = input.readLine();
-                System.out.println("Measurement response: " + measurementReply);
-                if ("OK".equals(measurementReply)) {
-                    String end = """
-            {"type":"END_SESSION","patientId":"test-patient","sessionId":"demo-001"}""";
-
-                    output.println(end);
-                    String endReply = input.readLine();
-                    System.out.println("End session response: " + endReply);
-                }
-            }
 
 
         } catch (IOException e) {
             System.err.println("could not connect to the hospital server: " + e.getMessage());
        }
+    }
+
+    private static JsonObject createMessage(String type, String patientId, String sessionId) {
+        JsonObject message = new JsonObject();
+        message.addProperty("type", type);
+        message.addProperty("patientId", patientId);
+        message.addProperty("sessionId", sessionId);
+        return message;
     }
 }
