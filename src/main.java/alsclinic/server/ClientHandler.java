@@ -25,6 +25,8 @@ public class ClientHandler implements Runnable {
     public void run() {
         try (Socket client = socket; BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8)); PrintWriter output = new PrintWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8), true)) {
             String line;
+            String activePatientId = null;
+            String activeSessionId = null;
             while ((line = input.readLine()) != null) {
                 try {
                     JsonObject message = JsonParser.parseString(line).getAsJsonObject();
@@ -51,7 +53,23 @@ public class ClientHandler implements Runnable {
                         default:
                             throw new IllegalArgumentException("Invalid message type: " + type);
                     }
+                    if ("START_SESSION".equals(type)) {
+                        if (activeSessionId != null) {
+                            throw new IllegalArgumentException("A session is already open");
+                        }
+                    } else if (!patientId.equals(activePatientId) || !sessionId.equals(activeSessionId)) {
+                        throw new IllegalArgumentException("Message must match the open patient and session");
+                    }
+
                     storage.save(patientId, sessionId, message.toString());
+                    if ("START_SESSION".equals(type)) {
+                        activePatientId = patientId;
+                        activeSessionId = sessionId;
+                    } else if ("END_SESSION".equals(type)) {
+                        activePatientId = null;
+                        activeSessionId = null;
+                    }
+
                     output.println("OK");
                 } catch (IllegalArgumentException|IllegalStateException|IOException e) {
                     output.println("Error: " + e.getMessage());

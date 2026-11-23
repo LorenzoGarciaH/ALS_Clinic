@@ -1,4 +1,6 @@
 package alsclinic.patient;
 
-public class SymptomReport {
+import java.time.Instant;
+
+public record SymptomReport(String symptoms, Instant submittedAt) {
 }
