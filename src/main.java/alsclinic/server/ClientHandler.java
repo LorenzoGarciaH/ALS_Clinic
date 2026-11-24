@@ -28,9 +28,15 @@ public class ClientHandler implements Runnable {
             String activePatientId = null;
             String activeSessionId = null;
             while ((line = input.readLine()) != null) {
+                String type="";
                 try {
                     JsonObject message = JsonParser.parseString(line).getAsJsonObject();
-                    String type = required(message, "type");
+                    type = required(message, "type");
+                    if (isDoctorMessage(type)){
+                        JsonObject response=handleDoctorMessage(type,message);
+                        output.println(response.toString());
+                        continue;
+                    }
                     String patientId = required(message, "patientId");
                     String sessionId = required(message, "sessionId");
                     switch (type){
@@ -71,14 +77,45 @@ public class ClientHandler implements Runnable {
                     }
 
                     output.println("OK");
-                } catch (IllegalArgumentException|IllegalStateException|IOException e) {
-                    output.println("Error: " + e.getMessage());
+                } catch (RuntimeException|IOException e) {
+                    if (isDoctorMessage(type)){
+                        JsonObject response= new JsonObject();
+                        response.addProperty("status","ERROR");
+                        response.addProperty("message",e.getMessage());
+                        output.println(response.toString());
+                    }else {
+                        output.println("Error: " + e.getMessage());
+                    }
                 }
             }
 
         } catch (IOException e) {
             System.out.println("Client connection closed: " + e.getMessage());
         }
+    }
+    private static boolean isDoctorMessage(String type){
+        return "GET_PATIENT_REPORTS".equals(type)||"GET_SESSIONS".equals(type)||"GET_HISTORY".equals(type)||"ADD_ANNOTATION".equals(type);
+    }
+    private JsonObject handleDoctorMessage(String type, JsonObject message) throws IOException {
+        JsonObject response= new JsonObject();
+        switch (type) {
+            case "GET_PATIENT":
+                response.add("patient",storage.getPatients());
+                break;
+            case "GET_SESSIONS":
+                response.add("sessions",storage.getSessions(required(message, "patientId")));
+                break;
+            case "GET_HISTORY":
+                response.add("history",storage.getHistory(required(message, "patientId"), required(message, "sessionId")));
+                break;
+            case "ADD_ANNOTATION":
+               storage.addAnnotation(required(message, "patientId"), required(message, "sessionId"), required(message, "comment"));
+               break;
+            default:
+                throw new IllegalArgumentException("Invalid message type: " + type);
+        }
+        response.addProperty("status","OK");
+        return response;
     }
     private static String required(JsonObject json, String key) {
         if (!json.has(key)||json.get(key).isJsonNull()|| !json.get(key).getAsJsonPrimitive().isString()){
