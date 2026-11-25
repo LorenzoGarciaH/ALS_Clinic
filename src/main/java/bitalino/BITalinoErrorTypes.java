@@ -6,7 +6,7 @@ public enum BITalinoErrorTypes {
     PORT_COULD_NOT_BE_OPENED (1,"The communication port could not be initialized. The provided parameters could not be set."),
     DEVICE_NOT_IDLE (2,"Device not in idle mode"),
     DEVICE_NOT_IN_ACQUISITION_MODE (3,"Device not is acquisition mode"),
-    SAMPLING_RATE_NOT_DEFINED (4,"The Sampling Rate chose cannot be set in BITalino. Choose 1000,100,10 or 1"),
+    SAMPLING_RATE_NOT_DEFINED (4,"The Sampling Rate chose cannot be set in Bitalino. Choose 1000,100,10 or 1"),
     LOST_COMMUNICATION (5, "The Computer lost communication"),
     INVALID_PARAMETER (6,"INVALID_PARAMETER"),
     THRESHOLD_NOT_VALID (7, "The threshold value must be between 0 and 63"),

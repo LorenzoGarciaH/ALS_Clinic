@@ -2,20 +2,20 @@
 /**
  \mainpage
 
- The %BITalino Java API (available at http://www.bitalino.com/API/API_Java.zip) is a BlueCove-powered library which enables Java applications to communicate with a %BITalino device through a simple interface.
- The API is composed of implementation files (BITalino.java and Frame.java), a set of auxiliary files to handle errors and exception (BITalinoErrorTypes.java and BITalinoException.java), and an auxiliary file for device discovery (DeviceDiscoverer.java).
+ The %Bitalino Java API (available at http://www.bitalino.com/API/API_Java.zip) is a BlueCove-powered library which enables Java applications to communicate with a %Bitalino device through a simple interface.
+ The API is composed of implementation files (Bitalino.java and Frame.java), a set of auxiliary files to handle errors and exception (BITalinoErrorTypes.java and BITalinoException.java), and an auxiliary file for device discovery (DeviceDiscoverer.java).
  A sample test application in Java (test.java()) is also provided.
 
  This code base has been designed to enable direct Bluetooth connection using the device Bluetooth MAC address (Windows and Mac OS);
 
- The API exposes the class BITalino, and each instance of this class represents a connection to a %BITalino device. The connection is established with the BITalino.open(...) method and released with the BITalino.close() method.
+ The API exposes the class Bitalino, and each instance of this class represents a connection to a %Bitalino device. The connection is established with the Bitalino.open(...) method and released with the Bitalino.close() method.
 
  \section sampleapp About the sample application
 
- The sample application (test.java) creates an instance to a %BITalino device.
+ The sample application (test.java) creates an instance to a %Bitalino device.
  Then it opens the connection, starts acquiring channels 1 and 5 on the device at 1000 Hz, reads 300 samples and toggles the digital outputs (green LED should turn on). Afterwards, the acquisition is stopped and the connection closed.
 
- The BITalino.open() method must be used to connect to the device.
+ The Bitalino.open() method must be used to connect to the device.
  The string passed to the constructor should be a Bluetooth MAC address including the ':' delimiter (to use the sample application you must change the MAC address therein).
 
  \section configuration Configuring the IDE
@@ -47,28 +47,28 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Vector;
 
-public class BITalino {
+public class Bitalino {
     /// Array with the list of analog inputs to be acquired from the device (auxiliary variable)
     private int[] analogChannels = null;
 
     /// Number of bytes expected for a frame sent by the device (auxiliary variable)
     private int number_bytes = 0;
 
-    /// Instance of the Bluetooth socket connection established with the BITalino device
+    /// Instance of the Bluetooth socket connection established with the Bitalino device
     private StreamConnection hSocket = null;
 
-    /// Instance of the data stream with data coming from the BITalino device
+    /// Instance of the data stream with data coming from the Bitalino device
     private DataInputStream iStream = null;
 
-    /// Instance of the data stream through which data can be sent to the BITalino device
+    /// Instance of the data stream through which data can be sent to the Bitalino device
     private DataOutputStream oStream = null;
 
-    public BITalino() {}
+    public Bitalino() {}
 
     public Vector<RemoteDevice> findDevices() throws InterruptedException
     {
         /** Searches for Bluetooth devices in range.
-         * \return a list of found devices with the name BITalino
+         * \return a list of found devices with the name Bitalino
          */
         DeviceDiscoverer finder = new  DeviceDiscoverer();
         while (finder.inqStatus == null)
@@ -82,7 +82,7 @@ public class BITalino {
 
     public void open(String macAdd) throws Throwable
     {
-        /** Connects to a %BITalino device.
+        /** Connects to a %Bitalino device.
          * \param[in] macAdd The device Bluetooth MAC address ("xx:xx:xx:xx:xx:xx")
 
          * \exception BITalinoErrorTypes (BITalinoErrorTypes.MACADDRESS_NOT_VALID)
@@ -97,7 +97,7 @@ public class BITalino {
 
     public void open(String macAdd, int samplingRate) throws BITalinoException
     {
-        /** Connects to a %BITalino device.
+        /** Connects to a %Bitalino device.
          * \param[in] macAdd The device Bluetooth MAC address ("xx:xx:xx:xx:xx:xx")
          * \param[in] samplingRate Sampling rate in Hz. Accepted values are 1, 10, 100 or 1000 Hz. Default value is 1000 Hz.
 
@@ -223,7 +223,7 @@ public class BITalino {
 
     public void close() throws BITalinoException
     {
-        /** Disconnects from a %BITalino device. If an aquisition is running, it is stopped.
+        /** Disconnects from a %Bitalino device. If an aquisition is running, it is stopped.
          * \exception BITalinoException (BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED)
          */
         try
@@ -245,8 +245,8 @@ public class BITalino {
     public void Write(int data) throws BITalinoException
     {
         /**
-         * Send a command to BITalino
-         * \param[in] data Byte corresponding to the command to be sent to the %BITalino device
+         * Send a command to Bitalino
+         * \param[in] data Byte corresponding to the command to be sent to the %Bitalino device
          * \exception BITalinoException (BITalinoErrorTypes.LOST_COMMUNICATION)
          */
         try
@@ -294,7 +294,7 @@ public class BITalino {
          * \param[in] digitalArray Vector of integers to assign to digital outputs, starting at first output (O1).
          * On each vector element, 0 sets the output to low level and 1 sets the output to high level.
          * This vector must contain exactly 4 elements.
-         * \remarks This method must be called only during an acquisition on original %BITalino. On %BITalino 2 there is no restriction.
+         * \remarks This method must be called only during an acquisition on original %Bitalino. On %Bitalino 2 there is no restriction.
          * \exception BITalinoException (BITalinoErrorTypes.DIGITAL_CHANNELS_NOT_VALID)
          * \exception BITalinoException (BITalinoErrorTypes.LOST_COMMUNICATION)
          */

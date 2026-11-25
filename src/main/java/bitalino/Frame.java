@@ -1,7 +1,7 @@
 package bitalino;
 
 
-/// A frame returned by BITalino.read()
+/// A frame returned by Bitalino.read()
 public class Frame {
     /// CRC4 check function result for the frame
     public int CRC;
@@ -15,8 +15,8 @@ public class Frame {
     public int [] analog = new int[6];
 
     /// Array of digital ports states (false for low level or true for high level).
-    /// On original %BITalino, the array contents are: I1 I2 I3 I4.
-    /// On %BITalino (r)evolution, the array contents are: I1 I2 O1 O2.
+    /// On original %Bitalino, the array contents are: I1 I2 I3 I4.
+    /// On %Bitalino (r)evolution, the array contents are: I1 I2 O1 O2.
     public int [] digital = new int[4];
 
 }

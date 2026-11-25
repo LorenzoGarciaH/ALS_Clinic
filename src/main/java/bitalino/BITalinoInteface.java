@@ -10,9 +10,9 @@ public class BITalinoInteface {
 
     public static void main(String[] args) {
 
-        BITalino bitalino = null;
+        Bitalino bitalino = null;
         try {
-            bitalino = new BITalino();
+            bitalino = new Bitalino();
             // find devices
             //Only works on some OS
             Vector<RemoteDevice> devices = bitalino.findDevices();
