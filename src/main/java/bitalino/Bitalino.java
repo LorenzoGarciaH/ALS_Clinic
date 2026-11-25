@@ -45,6 +45,7 @@ import javax.microedition.io.StreamConnection;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Vector;
 
 public class Bitalino {
@@ -62,6 +63,8 @@ public class Bitalino {
 
     /// Instance of the data stream through which data can be sent to the Bitalino device
     private DataOutputStream oStream = null;
+    private volatile boolean acquiring = false;
+
 
     public Bitalino() {}
 
@@ -79,6 +82,16 @@ public class Bitalino {
         return finder.remoteDevices;
 
     }
+    public boolean isOpen()
+    {
+        return hSocket != null && iStream != null && oStream != null;
+    }
+
+    public boolean isAcquiring()
+    {
+        return acquiring;
+    }
+
 
     public void open(String macAdd) throws Throwable
     {
@@ -161,85 +174,107 @@ public class Bitalino {
         }
     }
 
-    public void start(int[] anChannels) throws Throwable
+    public void start(int[] anChannels) throws BITalinoException
     {
         /** Starts a signal acquisition from the device.
          * \param[in] anChannels Set of channels to acquire. Accepted channels are 0...5 for inputs A1...A6.
-         * If this set is empty, no analog channels will be acquired.
-         * \remarks This method cannot be called during an acquisition.
-         * \exception BITalinoException (BITalinoErrorTypes.ANALOG_CHANNELS_NOT_VALID)
-         * \exception BITalinoException (BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED)
+         * The channels are sorted: Frame.analog[0] is always the lowest input requested.
+         * \exception BITalinoException ANALOG_CHANNELS_NOT_VALID, BT_DEVICE_NOT_CONNECTED, DEVICE_NOT_IDLE
          */
-        analogChannels = anChannels;
-        if (analogChannels.length > 6 | analogChannels.length == 0) {
+        if (!isOpen())
+        {
+            throw new BITalinoException(BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED);
+        }
+        if (acquiring)
+        {
+            throw new BITalinoException(BITalinoErrorTypes.DEVICE_NOT_IDLE);
+        }
+        if (anChannels == null || anChannels.length == 0 || anChannels.length > 6)
+        {
             throw new BITalinoException(BITalinoErrorTypes.ANALOG_CHANNELS_NOT_VALID);
-        } else {
-            int bit = 1;
-            for (int i : anChannels) {
-                if (i<0 | i>5)
-                {
-                    throw new BITalinoException(BITalinoErrorTypes.ANALOG_CHANNELS_NOT_VALID);
-                }
-                else
-                {
-                    bit = bit | 1<<(2+i);
-                }
-            }
-            int nChannels = analogChannels.length;
-            if (nChannels <= 4) {
-                number_bytes = (int) Math.ceil(((float)12 + (float)10 *nChannels)/8);
-
-
-            } else {
-                number_bytes = (int) Math.ceil(((float)52 + (float)6*(nChannels-4))/8);
-            }
-            try
-            {
-                Write(bit);
-            }
-            catch(Exception e)
-            {
-                throw new BITalinoException(BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED);
-            }
         }
 
-    }
+        int[] sorted = anChannels.clone();
+        Arrays.sort(sorted);
+        int bit = 1;
+        for (int k = 0; k < sorted.length; k++)
+        {
+            int i = sorted[k];
+            if (i < 0 || i > 5 || (k > 0 && sorted[k - 1] == i))
+            {
+                throw new BITalinoException(BITalinoErrorTypes.ANALOG_CHANNELS_NOT_VALID);
+            }
+            bit = bit | 1 << (2 + i);
+        }
 
+        int nChannels = sorted.length;
+        if (nChannels <= 4)
+        {
+            number_bytes = (int) Math.ceil(((float) 12 + (float) 10 * nChannels) / 8);
+        }
+        else
+        {
+            number_bytes = (int) Math.ceil(((float) 52 + (float) 6 * (nChannels - 4)) / 8);
+        }
+
+        analogChannels = sorted;
+        try
+        {
+            Write(bit);
+        }
+        catch (BITalinoException e)
+        {
+            throw new BITalinoException(BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED, e);
+        }
+        acquiring = true;
+    }
     public void stop() throws BITalinoException
     {
         /** Stops a signal acquisition.
-         * \remarks This method must be called only during an acquisition.
          * \exception BITalinoException (BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED)
          */
+        if (!acquiring)
+        {
+            return;
+        }
+        acquiring = false;
         try
         {
             Write(0);
         }
-        catch(Exception e)
+        catch (BITalinoException e)
         {
-            throw new BITalinoException(BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED);
+            throw new BITalinoException(BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED, e);
         }
     }
 
     public void close() throws BITalinoException
     {
-        /** Disconnects from a %Bitalino device. If an aquisition is running, it is stopped.
-         * \exception BITalinoException (BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED)
+        /** Disconnects from a %BITalino device. If an acquisition is running, it is stopped.
+         * Safe to call more than once and on a device that never opened.
          */
-        try
+        if (acquiring && oStream != null)
         {
-            hSocket.close();
-            iStream.close();
-            oStream.close();
-            hSocket=null;
-            iStream = null;
-            oStream = null;
+            try
+            {
+                stop();
+            }
+            catch (BITalinoException ignored)
+            {
+                // the link is probably already gone; keep closing
+            }
         }
-        catch(Exception e)
-        {
-            throw new BITalinoException(BITalinoErrorTypes.BT_DEVICE_NOT_CONNECTED);
-        }
-
+        closeQuietly();
+    }
+    private void closeQuietly()
+    {
+        acquiring = false;
+        try { if (iStream != null) iStream.close(); } catch (IOException ignored) { }
+        try { if (oStream != null) oStream.close(); } catch (IOException ignored) { }
+        try { if (hSocket != null) hSocket.close(); } catch (IOException ignored) { }
+        iStream = null;
+        oStream = null;
+        hSocket = null;
     }
 
     public void Write(int data) throws BITalinoException
