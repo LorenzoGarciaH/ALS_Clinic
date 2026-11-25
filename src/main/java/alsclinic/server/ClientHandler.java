@@ -22,52 +22,65 @@ public class ClientHandler implements Runnable {
         this.socket = socket;
         this.storage = storage;
     }
+    @Override
     public void run() {
-        try (Socket client = socket; BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8)); PrintWriter output = new PrintWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8), true)) {
+        String activePatientId = null;
+        String activeSessionId = null;
+
+        try (Socket client = socket;
+             BufferedReader input = new BufferedReader(
+                     new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
+             PrintWriter output = new PrintWriter(
+                     new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8),
+                     true)) {
+
             String line;
-            String activePatientId = null;
-            String activeSessionId = null;
+
             while ((line = input.readLine()) != null) {
-                String type="";
+                String type = "";
+
                 try {
                     JsonObject message = JsonParser.parseString(line).getAsJsonObject();
                     type = required(message, "type");
-                    if (isDoctorMessage(type)){
-                        JsonObject response=handleDoctorMessage(type,message);
+
+                    if (isDoctorMessage(type)) {
+                        JsonObject response = handleDoctorMessage(type, message);
                         output.println(response.toString());
                         continue;
                     }
+
                     String patientId = required(message, "patientId");
                     String sessionId = required(message, "sessionId");
-                    switch (type){
+
+                    switch (type) {
+                        case "START_SESSION":
+                            requiredInstant(message, "startedAt");
+                            break;
                         case "PATIENT_REPORT":
                             required(message, "symptoms");
-                            String submittedAt = required(message, "submittedAt");
-
-                            try {
-                                Instant.parse(submittedAt);
-                            } catch (DateTimeParseException e) {
-                                throw new IllegalArgumentException(
-                                        "submittedAt must be a valid timestamp, for example 2026-11-23T10:15:30Z");
-                            }
-
+                            requiredInstant(message, "submittedAt");
                             break;
-                        case "START_SESSION":
                         case "MEASUREMENT":
+                            break;
                         case "END_SESSION":
+                            requiredInstant(message, "endedAt");
                             break;
                         default:
                             throw new IllegalArgumentException("Invalid message type: " + type);
                     }
+
                     if ("START_SESSION".equals(type)) {
                         if (activeSessionId != null) {
                             throw new IllegalArgumentException("A session is already open");
                         }
-                    } else if (!patientId.equals(activePatientId) || !sessionId.equals(activeSessionId)) {
-                        throw new IllegalArgumentException("Message must match the open patient and session");
+                    } else if (!patientId.equals(activePatientId)
+                            || !sessionId.equals(activeSessionId)) {
+                        throw new IllegalArgumentException(
+                                "Message must match the open patient and session");
                     }
 
                     storage.save(patientId, sessionId, message.toString());
+
                     if ("START_SESSION".equals(type)) {
                         activePatientId = patientId;
                         activeSessionId = sessionId;
@@ -77,25 +90,43 @@ public class ClientHandler implements Runnable {
                     }
 
                     output.println("OK");
-                } catch (RuntimeException|IOException e) {
-                    if (isDoctorMessage(type)){
-                        JsonObject response= new JsonObject();
-                        response.addProperty("status","ERROR");
-                        response.addProperty("message",e.getMessage());
+                } catch (RuntimeException | IOException e) {
+                    if (isDoctorMessage(type)) {
+                        JsonObject response = new JsonObject();
+                        response.addProperty("status", "ERROR");
+                        response.addProperty("message", e.getMessage());
                         output.println(response.toString());
-                    }else {
+                    } else {
                         output.println("Error: " + e.getMessage());
                     }
                 }
             }
-
         } catch (IOException e) {
             System.out.println("Client connection closed: " + e.getMessage());
+        } finally {
+            if (activeSessionId != null) {
+                JsonObject interruption = new JsonObject();
+                interruption.addProperty("type", "SESSION_INTERRUPTED");
+                interruption.addProperty("patientId", activePatientId);
+                interruption.addProperty("sessionId", activeSessionId);
+                interruption.addProperty("detectedAt", Instant.now().toString());
+                interruption.addProperty("reason", "connection_closed_before_end");
+
+                try {
+                    storage.save(activePatientId, activeSessionId, interruption.toString());
+                } catch (IOException e) {
+                    System.err.println("Could not record interrupted session "
+                            + activeSessionId + ": " + e.getMessage());
+                }
+            }
         }
     }
+
+
     private static boolean isDoctorMessage(String type){
         return "GET_PATIENT_REPORTS".equals(type)||"GET_SESSIONS".equals(type)||"GET_HISTORY".equals(type)||"ADD_ANNOTATION".equals(type);
     }
+
     private JsonObject handleDoctorMessage(String type, JsonObject message) throws IOException {
         JsonObject response= new JsonObject();
         switch (type) {
@@ -117,6 +148,7 @@ public class ClientHandler implements Runnable {
         response.addProperty("status","OK");
         return response;
     }
+
     private static String required(JsonObject json, String key) {
         if (!json.has(key)||json.get(key).isJsonNull()|| !json.get(key).getAsJsonPrimitive().isString()){
             throw new IllegalArgumentException("Missing or invalid field: "+key);
@@ -126,5 +158,16 @@ public class ClientHandler implements Runnable {
             throw new IllegalArgumentException("Emty field: "+key);
         }
         return value;
+    }
+
+    private static Instant requiredInstant(JsonObject message, String field) {
+        String value = required(message, field);
+
+        try {
+            return Instant.parse(value);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException(
+                    field + " must be a valid timestamp, for example 2026-11-25T16:00:00Z");
+        }
     }
 }
