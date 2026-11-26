@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import alsclinic.common.Message;
 
 
 public class ClientHandler implements Runnable {
@@ -124,28 +125,31 @@ public class ClientHandler implements Runnable {
 
 
     private static boolean isDoctorMessage(String type){
-        return "GET_PATIENT_REPORTS".equals(type)||"GET_SESSIONS".equals(type)||"GET_HISTORY".equals(type)||"ADD_ANNOTATION".equals(type);
+        return Message.GET_PATIENTS.equals(type)||
+                Message.GET_SESSIONS.equals(type)||
+                Message.GET_HISTORY.equals(type)||
+                Message.ADD_ANNOTATION.equals(type);
     }
 
     private JsonObject handleDoctorMessage(String type, JsonObject message) throws IOException {
         JsonObject response= new JsonObject();
         switch (type) {
-            case "GET_PATIENT":
+            case Message.GET_PATIENTS:
                 response.add("patient",storage.getPatients());
                 break;
-            case "GET_SESSIONS":
+            case Message.GET_SESSIONS:
                 response.add("sessions",storage.getSessions(required(message, "patientId")));
                 break;
-            case "GET_HISTORY":
+            case Message.GET_HISTORY:
                 response.add("history",storage.getHistory(required(message, "patientId"), required(message, "sessionId")));
                 break;
-            case "ADD_ANNOTATION":
+            case Message.ADD_ANNOTATION:
                storage.addAnnotation(required(message, "patientId"), required(message, "sessionId"), required(message, "comment"));
                break;
             default:
                 throw new IllegalArgumentException("Invalid message type: " + type);
         }
-        response.addProperty("status","OK");
+        response.addProperty("status",Message.OK);
         return response;
     }
 

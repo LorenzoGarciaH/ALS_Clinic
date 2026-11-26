@@ -8,7 +8,7 @@ public class Message {
     public static final String PATIENT_REPORT="PATIENT_REPORT";
     public static final String MEEASUREMENT="MEASUREMENT";
 
-    public static final String GET_PATIENT="GET_PATIENT";
+    public static final String GET_PATIENTS="GET_PATIENTS";
     public static final String GET_SESSIONS="GET_SESSIONS";
     public static final String GET_HISTORY="GET_HISTORY";
     public static final String ADD_ANNOTATION="ADD_ANNOTATION";

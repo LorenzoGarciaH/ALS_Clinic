@@ -90,6 +90,21 @@ public class DataStorage {
         Path annotationFile=annotationsDirectory.resolve(sessionId+".jsonl");
         Files.writeString(annotationFile, annotation.toString() + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
+    public synchronized JsonArray getAnnotations(String patientId, String sessionId)throws IOException {
+        validateId(patientId);
+        validateId(sessionId);
+        JsonArray annotations= new JsonArray();
+        Path file= dataDirectory.resolve(patientId).resolve("annotations").resolve(sessionId+".jsonl");
+        if (!Files.exists(file)) {
+            return annotations;
+        }
+        for (String line: Files.readAllLines(file, StandardCharsets.UTF_8)){
+            if(!line.isBlank()){
+                annotations.add(JsonParser.parseString(line));
+            }
+        }
+        return annotations;
+    }
     private void validateId(String id) {
         if (id == null || !VALID_ID.matcher(id).matches()) {
             throw new IllegalArgumentException("Invalid ID: " + id);

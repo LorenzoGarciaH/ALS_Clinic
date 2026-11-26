@@ -24,7 +24,7 @@ public class DoctorApp {
                     JsonObject response;
                     switch (option){
                         case "1":
-                            response=client.getPatient();
+                            response=client.getPatients();
                             System.out.println(response);
                             break;
                         case "2":
