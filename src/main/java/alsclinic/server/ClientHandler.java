@@ -135,7 +135,7 @@ public class ClientHandler implements Runnable {
         JsonObject response= new JsonObject();
         switch (type) {
             case Message.GET_PATIENTS:
-                response.add("patient",storage.getPatients());
+                response.add("patients",storage.getPatients());
                 break;
             case Message.GET_SESSIONS:
                 response.add("sessions",storage.getSessions(required(message, "patientId")));
@@ -144,8 +144,8 @@ public class ClientHandler implements Runnable {
                 response.add("history",storage.getHistory(required(message, "patientId"), required(message, "sessionId")));
                 break;
             case Message.ADD_ANNOTATION:
-               storage.addAnnotation(required(message, "patientId"), required(message, "sessionId"), required(message, "comment"));
-               break;
+                storage.addAnnotation(required(message, "patientId"), required(message, "sessionId"), required(message, "comment"));
+                break;
             default:
                 throw new IllegalArgumentException("Invalid message type: " + type);
         }
