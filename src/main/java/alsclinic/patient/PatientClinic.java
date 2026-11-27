@@ -40,9 +40,9 @@ public class PatientClinic {
             measurement.add("emg", gson.toJsonTree(new int[]{500, 530, 502}));
             sendAndRequireOk(measurement, output, input);
             // Prueba para ver si pueden estar conectados a la vez
-            System.out.println("Session active. Waiting 30 seconds...");
+            System.out.println("Session active. Waiting 120 seconds...");
             try {
-                Thread.sleep(30000);
+                Thread.sleep(120000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IOException("Session interrupted", e);

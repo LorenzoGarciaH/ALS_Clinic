@@ -134,7 +134,10 @@ public class ClientHandler implements Runnable {
                 response.add("sessions",storage.getSessions(required(message, "patientId")));
                 break;
             case Message.GET_HISTORY:
-                response.add("history",storage.getHistory(required(message, "patientId"), required(message, "sessionId")));
+                String patientId = required(message, "patientId");
+                String sessionId = required(message, "sessionId");
+                response.add("history", storage.getHistory(patientId, sessionId));
+                response.add("annotations", storage.getAnnotations(patientId, sessionId));
                 break;
             case Message.ADD_ANNOTATION:
                 storage.addAnnotation(required(message, "patientId"), required(message, "sessionId"), required(message, "comment"));
