@@ -8,17 +8,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class HospitalServer {
+public class   HospitalServer {
     private final Set<Socket> clients = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean running = new AtomicBoolean(true);
     private ServerSocket serverSocket;
     private final DataStorage storage;
     public HospitalServer()throws IOException{
-        storage=new DataStorage("data");
+        String dataDirectory = System.getProperty("als.data.dir", "data");
+        storage = new DataStorage(dataDirectory);
     }
     public void start()throws IOException{
-        serverSocket= new ServerSocket(9000);
-        System.out.println("Hospital server started on port 9000");
+        int serverPort = Integer.getInteger("als.server.port", 9000);
+        serverSocket = new ServerSocket(serverPort);
+        System.out.println("Hospital server started on port " + serverPort);
+
         Thread adminThread= new Thread(new AdminConsole(this),"admin-console");
         adminThread.setDaemon(true);
         adminThread.start();
