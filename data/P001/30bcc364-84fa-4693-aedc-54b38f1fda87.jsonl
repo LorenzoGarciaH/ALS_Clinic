@@ -1,0 +1,4 @@
+{"type":"START_SESSION","patientId":"P001","sessionId":"30bcc364-84fa-4693-aedc-54b38f1fda87","startedAt":"2026-11-26T20:10:06.749106100Z"}
+{"type":"PATIENT_REPORT","patientId":"P001","sessionId":"30bcc364-84fa-4693-aedc-54b38f1fda87","symptoms":"Muscular weakness and fatigue","submittedAt":"2026-11-26T20:10:06.856182900Z"}
+{"type":"MEASUREMENT","patientId":"P001","sessionId":"30bcc364-84fa-4693-aedc-54b38f1fda87","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"END_SESSION","patientId":"P001","sessionId":"30bcc364-84fa-4693-aedc-54b38f1fda87","endedAt":"2026-11-26T20:10:06.897082500Z"}
