@@ -14,7 +14,8 @@ public enum BITalinoErrorTypes {
     INCORRECT_DECODE (9, "Incorrect data to be decoded"),
     DIGITAL_CHANNELS_NOT_VALID (10, "To set the digital outputs, the input array must have 4 items, one for each channel."),
     MACADDRESS_NOT_VALID (11, "MAC address not valid."),
-    UNDEFINED (12,"UNDEFINED ERROR");
+    UNDEFINED (12,"UNDEFINED ERROR"),
+    ACQUISITION_TIMEOUT(13,"Acquisition timed out");
 
 
     private final int value;

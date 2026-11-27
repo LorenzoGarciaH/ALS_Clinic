@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class BitalinoManager implements SignalSource {
@@ -50,7 +50,7 @@ public class BitalinoManager implements SignalSource {
      */
     public BitalinoManager(String bluetoothAddress, int samplingRateHz, List<AcquisitionChannel> channels)
             throws BITalinoException {
-        if (!Bitalino.isSupportedSamplingRate(samplingRateHz)) {
+        if (!Bitalino.isSuportedSamplingRate(samplingRateHz)){
             throw new BITalinoException(BITalinoErrorTypes.SAMPLING_RATE_NOT_DEFINED);
         }
         if (channels == null || channels.isEmpty()) {
