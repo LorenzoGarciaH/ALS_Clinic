@@ -10,13 +10,24 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
+/**
+ * Real Bitalino device for ALS_Clinic.
+ *
+ * <pre>
+ * try (BitalinoManager bitalino = new BitalinoManager("20:16:02:14:75:76", 1000,
+ *         List.of(AcquisitionChannel.of(SensorType.EMG), AcquisitionChannel.of(SensorType.EEG)))) {
+ *     bitalino.start();
+ *     SignalBlock block = bitalino.read(1000);   // 1 s of data
+ *     bitalino.stop();
+ * }
+ * </pre>
+ *
+ * Disconnection handling: every read runs on a helper thread with a time limit. If no data arrives within
+ * (block duration + {@value #READ_MARGIN_MS} ms) the Bluetooth link is closed and an
+ * ACQUISITION_TIMEOUT BITalinoException is thrown, so the app never hangs when the
+ * device is switched off or goes out of range. A broken stream throws LOST_COMMUNICATION.
+ */
 public class BitalinoManager implements SignalSource {
 
     /** Extra time allowed on top of the expected block duration before declaring the device lost. */
@@ -28,12 +39,6 @@ public class BitalinoManager implements SignalSource {
     /** For each channel, its position inside Frame.analog[] (device returns inputs in ascending order). */
     private final int[] framePosition;
     private final int[] analogInputs;
-
-    private final ExecutorService reader = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "bitalino-reader");
-        t.setDaemon(true);
-        return t;
-    });
 
     private Instant acquisitionStart;
     private long samplesRead;
@@ -50,7 +55,7 @@ public class BitalinoManager implements SignalSource {
      */
     public BitalinoManager(String bluetoothAddress, int samplingRateHz, List<AcquisitionChannel> channels)
             throws BITalinoException {
-        if (!Bitalino.isSuportedSamplingRate(samplingRateHz)){
+        if (!Bitalino.isSupportedSamplingRate(samplingRateHz)) {
             throw new BITalinoException(BITalinoErrorTypes.SAMPLING_RATE_NOT_DEFINED);
         }
         if (channels == null || channels.isEmpty()) {
@@ -74,12 +79,7 @@ public class BitalinoManager implements SignalSource {
             framePosition[c] = Arrays.binarySearch(sorted, analogInputs[c]);
         }
 
-        try {
-            device.open(bluetoothAddress, samplingRateHz);
-        } catch (BITalinoException e) {
-            reader.shutdownNow();
-            throw e;
-        }
+        device.open(bluetoothAddress, samplingRateHz);
     }
 
     @Override
@@ -125,26 +125,40 @@ public class BitalinoManager implements SignalSource {
         }
 
         long timeoutMs = (nSamples * 1000L) / samplingRateHz + READ_MARGIN_MS;
-        Future<Frame[]> pending = reader.submit(() -> device.read(nSamples));
-        Frame[] frames;
-        try {
-            frames = pending.get(timeoutMs, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException e) {
-            pending.cancel(true);
-            close(); // closing the socket unblocks the stuck read
-            throw new BITalinoException(BITalinoErrorTypes.ACQUISITION_TIMEOUT, e);
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            close();
-            if (cause instanceof BITalinoException be) {
-                throw be;
+
+        // device.read() blocks until the data arrives. It runs on a helper thread so that
+        // this thread can wait for it with a time limit (join) instead of waiting forever.
+        Frame[][] result = new Frame[1][];
+        BITalinoException[] failure = new BITalinoException[1];
+        Thread readerThread = new Thread(() -> {
+            try {
+                result[0] = device.read(nSamples);
+            } catch (BITalinoException e) {
+                failure[0] = e;
+            } catch (RuntimeException e) {
+                failure[0] = new BITalinoException(BITalinoErrorTypes.LOST_COMMUNICATION, e);
             }
-            throw new BITalinoException(BITalinoErrorTypes.LOST_COMMUNICATION, cause);
+        }, "bitalino-reader");
+        readerThread.setDaemon(true);
+        readerThread.start();
+
+        try {
+            readerThread.join(timeoutMs);           // wait at most timeoutMs milliseconds
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            pending.cancel(true);
+            close();
             throw new BITalinoException(BITalinoErrorTypes.LOST_COMMUNICATION, e);
         }
+
+        if (readerThread.isAlive()) {               // still waiting: the device went silent
+            close();                                // closing the socket unblocks the stuck read
+            throw new BITalinoException(BITalinoErrorTypes.ACQUISITION_TIMEOUT);
+        }
+        if (failure[0] != null) {                   // the read failed
+            close();
+            throw failure[0];
+        }
+        Frame[] frames = result[0];
 
         int[][] raw = new int[channels.size()][nSamples];
         int dropped = 0;
@@ -186,6 +200,5 @@ public class BitalinoManager implements SignalSource {
         } catch (BITalinoException ignored) {
             // close is best-effort
         }
-        reader.shutdownNow();
     }
 }
