@@ -1,0 +1,4 @@
+{"type":"START_SESSION","patientId":"P002","sessionId":"c50f6ae6-17af-4cf1-8183-70eedf0cfc80","startedAt":"2026-11-27T11:53:45.424189900Z"}
+{"type":"PATIENT_REPORT","patientId":"P002","sessionId":"c50f6ae6-17af-4cf1-8183-70eedf0cfc80","symptoms":"Muscle cramps and difficulty walking","submittedAt":"2026-11-27T11:53:45.475162900Z"}
+{"type":"MEASUREMENT","patientId":"P002","sessionId":"c50f6ae6-17af-4cf1-8183-70eedf0cfc80","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"END_SESSION","patientId":"P002","sessionId":"c50f6ae6-17af-4cf1-8183-70eedf0cfc80","endedAt":"2026-11-27T11:53:45.518242Z"}

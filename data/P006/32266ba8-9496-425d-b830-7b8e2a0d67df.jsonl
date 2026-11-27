@@ -1,0 +1,4 @@
+{"type":"START_SESSION","patientId":"P006","sessionId":"32266ba8-9496-425d-b830-7b8e2a0d67df","startedAt":"2026-11-27T12:23:43.079800700Z"}
+{"type":"PATIENT_REPORT","patientId":"P006","sessionId":"32266ba8-9496-425d-b830-7b8e2a0d67df","symptoms":"Muscle cramps and fatigue","submittedAt":"2026-11-27T12:23:43.217432Z"}
+{"type":"MEASUREMENT","patientId":"P006","sessionId":"32266ba8-9496-425d-b830-7b8e2a0d67df","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"END_SESSION","patientId":"P006","sessionId":"32266ba8-9496-425d-b830-7b8e2a0d67df","endedAt":"2026-11-27T12:24:13.305730900Z"}

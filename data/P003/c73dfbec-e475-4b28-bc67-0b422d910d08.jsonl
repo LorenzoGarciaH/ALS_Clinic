@@ -1,0 +1,4 @@
+{"type":"START_SESSION","patientId":"P003","sessionId":"c73dfbec-e475-4b28-bc67-0b422d910d08","startedAt":"2026-11-27T12:06:30.530268400Z"}
+{"type":"PATIENT_REPORT","patientId":"P003","sessionId":"c73dfbec-e475-4b28-bc67-0b422d910d08","symptoms":"Difficulty swallowing","submittedAt":"2026-11-27T12:06:30.573976900Z"}
+{"type":"MEASUREMENT","patientId":"P003","sessionId":"c73dfbec-e475-4b28-bc67-0b422d910d08","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"END_SESSION","patientId":"P003","sessionId":"c73dfbec-e475-4b28-bc67-0b422d910d08","endedAt":"2026-11-27T12:06:30.616904500Z"}
