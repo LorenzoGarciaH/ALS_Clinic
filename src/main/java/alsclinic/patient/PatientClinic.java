@@ -39,6 +39,15 @@ public class PatientClinic {
             measurement.add("eeg", gson.toJsonTree(new int[]{512, 514, 511}));
             measurement.add("emg", gson.toJsonTree(new int[]{500, 530, 502}));
             sendAndRequireOk(measurement, output, input);
+            // Prueba para ver si pueden estar conectados a la vez
+            System.out.println("Session active. Waiting 120 seconds...");
+            try {
+                Thread.sleep(120000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Session interrupted", e);
+            }
+
 
             JsonObject end = createMessage("END_SESSION", patientId, sessionId);
             end.addProperty("endedAt", Instant.now().toString());

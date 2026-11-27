@@ -26,9 +26,19 @@ public class HospitalServer {
             try {
                 Socket client = serverSocket.accept();
                 clients.add(client);
-                Thread worker = new Thread(()->{try {new ClientHandler(client,storage).run();}catch (Exception e){System.out.println("Error handling client: "+e.getMessage());}finally {clients.remove(client);}});
+                Thread worker = new Thread(()->{
+                    try {
+                        new ClientHandler(client,storage).run();
+                    }
+                    catch (Exception e){
+                        System.out.println("Error handling client: "+e.getMessage());
+                    }finally {
+                        clients.remove(client);
+                        System.out.println("Client disconnected. Total connected clients: "+clients.size());
+                    }
+                });
                 worker.start();
-                System.out.println("New patient connected. Total connected clients: " + clients.size());
+                System.out.println("New client connected. Total connected clients: " + clients.size());
             }catch (SocketException e){
                 if (running.get()){
                    throw e;
@@ -43,20 +53,22 @@ public class HospitalServer {
         if (!running.compareAndSet(true,false)){
             return;
         }
+        System.out.println("Shutting down server...");
         try {
             if (serverSocket!=null&&!serverSocket.isClosed()){
                 serverSocket.close();
             }
-            for (Socket client:clients) {
-                try {
-                    client.close();
-                } catch (IOException e) {
-                }
-            }
-            System.out.println("Hospital server shutdown complete.");
         }catch (IOException e){
             System.out.println("Error shutting down server: "+e.getMessage());
         }
+        for (Socket client:clients) {
+            try {
+                client.close();
+            } catch (IOException e) {
+                System.out.println("Error closing client socket: " + e.getMessage());
+            }
+        }
+        System.out.println("Hospital server shutdown complete.");
     }
     public static void main(String[] args) {
        try {

@@ -1,0 +1,4 @@
+{"type":"START_SESSION","patientId":"P004","sessionId":"bd0a06aa-442d-470c-8c9a-f073b3a9e335","startedAt":"2026-11-27T12:06:28.026190400Z"}
+{"type":"PATIENT_REPORT","patientId":"P004","sessionId":"bd0a06aa-442d-470c-8c9a-f073b3a9e335","symptoms":"Muscle weakness in the legs","submittedAt":"2026-11-27T12:06:28.120741900Z"}
+{"type":"MEASUREMENT","patientId":"P004","sessionId":"bd0a06aa-442d-470c-8c9a-f073b3a9e335","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"END_SESSION","patientId":"P004","sessionId":"bd0a06aa-442d-470c-8c9a-f073b3a9e335","endedAt":"2026-11-27T12:06:28.165034200Z"}

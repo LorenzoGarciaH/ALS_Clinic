@@ -1,0 +1,4 @@
+{"type":"START_SESSION","patientId":"P007","sessionId":"a2065d04-66bd-49b7-95b3-7e7092b24ae5","startedAt":"2026-11-27T12:26:11.388529300Z"}
+{"type":"PATIENT_REPORT","patientId":"P007","sessionId":"a2065d04-66bd-49b7-95b3-7e7092b24ae5","symptoms":"Muscle weakness in the arms","submittedAt":"2026-11-27T12:26:11.437475200Z"}
+{"type":"MEASUREMENT","patientId":"P007","sessionId":"a2065d04-66bd-49b7-95b3-7e7092b24ae5","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"SESSION_INTERRUPTED","patientId":"P007","sessionId":"a2065d04-66bd-49b7-95b3-7e7092b24ae5","detectedAt":"2026-11-27T12:26:14.971024800Z","reason":"connection_closed_before_end"}

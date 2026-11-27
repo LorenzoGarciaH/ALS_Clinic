@@ -1,0 +1,4 @@
+{"type":"START_SESSION","patientId":"P005","sessionId":"1d51d8e9-3967-4cb4-9f89-e186d4d9db6e","startedAt":"2026-11-27T12:23:44.774005900Z"}
+{"type":"PATIENT_REPORT","patientId":"P005","sessionId":"1d51d8e9-3967-4cb4-9f89-e186d4d9db6e","symptoms":"Difficulty walking and muscle stiffness","submittedAt":"2026-11-27T12:23:44.831516100Z"}
+{"type":"MEASUREMENT","patientId":"P005","sessionId":"1d51d8e9-3967-4cb4-9f89-e186d4d9db6e","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"END_SESSION","patientId":"P005","sessionId":"1d51d8e9-3967-4cb4-9f89-e186d4d9db6e","endedAt":"2026-11-27T12:24:14.877040700Z"}

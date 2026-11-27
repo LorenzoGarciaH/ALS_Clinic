@@ -68,6 +68,10 @@ public class Bitalino {
 
     public Bitalino() {}
 
+    public static boolean isSuportedSamplingRate(int samplingRate){
+        return samplingRate==1||samplingRate==10||samplingRate==100||samplingRate==1000;
+    }
+
     public Vector<RemoteDevice> findDevices() throws InterruptedException
     {
         /** Searches for Bluetooth devices in range.
