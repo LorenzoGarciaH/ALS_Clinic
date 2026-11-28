@@ -26,6 +26,11 @@ public class HospitalServer {
             try {
                 Socket client = serverSocket.accept();
                 clients.add(client);
+                if (!running.get()) {
+                    clients.remove(client);
+                    client.close();
+                    break;
+                }
                 Thread worker = new Thread(()->{
                     try {
                         new ClientHandler(client,storage).run();
@@ -68,7 +73,7 @@ public class HospitalServer {
                 System.out.println("Error closing client socket: " + e.getMessage());
             }
         }
-        System.out.println("Hospital server shutdown complete.");
+        System.out.println("Hospital server shutdown requested.");
     }
     public static void main(String[] args) {
        try {
