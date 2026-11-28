@@ -1,0 +1,4 @@
+{"type":"START_SESSION","patientId":"P009","sessionId":"fb39f149-a5b7-4c4e-8035-a6fda8ce5a1b","startedAt":"2026-11-27T16:59:23.968520800Z"}
+{"type":"PATIENT_REPORT","patientId":"P009","sessionId":"fb39f149-a5b7-4c4e-8035-a6fda8ce5a1b","symptoms":"Muscle cramps, progressive muscle weakness and fatigue.","submittedAt":"2026-11-27T16:59:24.072174900Z"}
+{"type":"MEASUREMENT","patientId":"P009","sessionId":"fb39f149-a5b7-4c4e-8035-a6fda8ce5a1b","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"SESSION_INTERRUPTED","patientId":"P009","sessionId":"fb39f149-a5b7-4c4e-8035-a6fda8ce5a1b","detectedAt":"2026-11-27T16:59:57.176448200Z","reason":"connection_closed_before_end"}

@@ -1,0 +1,4 @@
+{"type":"START_SESSION","patientId":"P008","sessionId":"12828801-7dc2-4454-a320-18e0a11bb849","startedAt":"2026-11-27T16:51:15.541810800Z"}
+{"type":"PATIENT_REPORT","patientId":"P008","sessionId":"12828801-7dc2-4454-a320-18e0a11bb849","symptoms":"Muscle weakness and difficulty swallowing","submittedAt":"2026-11-27T16:51:15.612238600Z"}
+{"type":"MEASUREMENT","patientId":"P008","sessionId":"12828801-7dc2-4454-a320-18e0a11bb849","eeg":[512,514,511],"emg":[500,530,502]}
+{"type":"END_SESSION","patientId":"P008","sessionId":"12828801-7dc2-4454-a320-18e0a11bb849","endedAt":"2026-11-27T16:51:45.661901900Z"}
