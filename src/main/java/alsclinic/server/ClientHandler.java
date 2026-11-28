@@ -1,6 +1,7 @@
 
 package alsclinic.server;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -55,6 +56,7 @@ public class ClientHandler implements Runnable {
                             requiredInstant(message, "submittedAt");
                             break;
                         case "MEASUREMENT":
+                            validateMeasurement(message);
                             break;
                         case "END_SESSION":
                             requiredInstant(message, "endedAt");
@@ -168,6 +170,60 @@ public class ClientHandler implements Runnable {
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException(
                     field + " must be a valid timestamp, for example 2026-11-25T16:00:00Z");
+        }
+    }
+
+    private static void validateMeasurement(JsonObject message) {
+        String signalType = required(message, "signalType");
+        if (!"ECG".equals(signalType) && !"EMG".equals(signalType)) {
+            throw new IllegalArgumentException("signalType must be ECG or EMG");
+        }
+
+        String channel = required(message, "channel");
+        if (!channel.matches("A[1-4]")) {
+            throw new IllegalArgumentException("channel must be A1, A2, A3 or A4");
+        }
+
+        int rate = requiredInteger(message.get("samplingRateHz"), "samplingRateHz");
+        if (rate != 1 && rate != 10 && rate != 100 && rate != 1000) {
+            throw new IllegalArgumentException("samplingRateHz must be 1, 10, 100 or 1000");
+        }
+
+        if (!"ADC_COUNTS".equals(required(message, "unit"))) {
+            throw new IllegalArgumentException("unit must be ADC_COUNTS");
+        }
+
+        requiredInstant(message, "firstSampleAt");
+
+        JsonElement simulated = message.get("simulated");
+        if (simulated == null || !simulated.isJsonPrimitive()
+                || !simulated.getAsJsonPrimitive().isBoolean()) {
+            throw new IllegalArgumentException("simulated must be true or false");
+        }
+
+        JsonElement samples = message.get("samples");
+        if (samples == null || !samples.isJsonArray() || samples.getAsJsonArray().isEmpty()) {
+            throw new IllegalArgumentException("samples must be a nonempty array");
+        }
+
+        for (JsonElement entry : samples.getAsJsonArray()) {
+            int sample = requiredInteger(entry, "sample");
+            if (sample < 0 || sample > 1023) {
+                throw new IllegalArgumentException("ADC samples must be between 0 and 1023");
+            }
+        }
+    }
+
+    private static int requiredInteger(JsonElement value, String field) {
+        if (value == null || !value.isJsonPrimitive()
+                || !value.getAsJsonPrimitive().isNumber()) {
+            throw new IllegalArgumentException(field + " must be an integer");
+        }
+
+        try {
+            return value.getAsBigDecimal().intValueExact();
+        } catch (ArithmeticException | NumberFormatException e) {
+            throw new IllegalArgumentException(field + " must be an integer", e);
         }
     }
 }

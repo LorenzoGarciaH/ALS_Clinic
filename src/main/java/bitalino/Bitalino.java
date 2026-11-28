@@ -96,6 +96,18 @@ public class Bitalino {
         return acquiring;
     }
 
+    /// Sampling rates supported by the device (Hz)
+    public static final int[] SUPPORTED_SAMPLING_RATES = {1, 10, 100, 1000};
+
+    public static boolean isSupportedSamplingRate(int samplingRate)
+    {
+        for (int r : SUPPORTED_SAMPLING_RATES)
+        {
+            if (r == samplingRate) return true;
+        }
+        return false;
+    }
+
 
     public void open(String macAdd) throws Throwable
     {
@@ -300,96 +312,6 @@ public class Bitalino {
         }
     }
 
-    public void battery(int value) throws BITalinoException
-    {
-        /** Sets the battery voltage threshold for the low-battery LED.
-         * \param[in] value Battery voltage threshold. Default value is 0.
-         * Value | Voltage Threshold
-         * ----- | -----------------
-         *     0 |   3.4 V
-         *  ...  |   ...
-         *    63 |   3.8 V
-         * \remarks This method cannot be called during an acquisition.
-         * \exception BITalinoException (BITalinoErrorTypes.THRESHOLD_NOT_VALID)
-         * \exception BITalinoException (BITalinoErrorTypes.LOST_COMMUNICATION)
-         */
-        int Mode;
-        if (value >= 0 && value<=63)
-        {
-            Mode = value << 2;
-            Write(Mode);
-
-        }
-        else
-        {
-            throw new BITalinoException(BITalinoErrorTypes.THRESHOLD_NOT_VALID);
-        }
-
-    }
-
-    public void trigger(int[] digitalArray) throws BITalinoException
-    {
-        /** Assigns the digital outputs states.
-         * \param[in] digitalArray Vector of integers to assign to digital outputs, starting at first output (O1).
-         * On each vector element, 0 sets the output to low level and 1 sets the output to high level.
-         * This vector must contain exactly 4 elements.
-         * \remarks This method must be called only during an acquisition on original %Bitalino. On %Bitalino 2 there is no restriction.
-         * \exception BITalinoException (BITalinoErrorTypes.DIGITAL_CHANNELS_NOT_VALID)
-         * \exception BITalinoException (BITalinoErrorTypes.LOST_COMMUNICATION)
-         */
-        if (digitalArray.length != 4)
-        {
-            throw new BITalinoException(BITalinoErrorTypes.DIGITAL_CHANNELS_NOT_VALID);
-        }
-        else
-        {
-            int data  = 3;
-            for (int i= 0;i<digitalArray.length;i++)
-            {
-                if (digitalArray[i]<0 | digitalArray[i]>1)
-                {
-                    throw new BITalinoException(BITalinoErrorTypes.DIGITAL_CHANNELS_NOT_VALID);
-                }
-                else
-                {
-                    data = data | digitalArray[i]<<(2+i);
-                }
-
-            }
-            Write(data);
-        }
-    }
-
-    public String version() throws BITalinoException, IOException
-    {
-        /** Returns the device firmware version string.
-         * \remarks This method cannot be called during an acquisition.
-         * \exception BITalinoException (BITalinoErrorTypes.LOST_COMMUNICATION)
-         * \exception IOException
-         */
-        try
-        {
-            Write(7);
-            byte[] version = new byte[30];
-            String test = "";
-            int i = 0;
-            while (true)
-            {
-                iStream.read(version,i,1);
-                i++;
-                test = new String(new byte[] {version[i-1]});
-                if (test.equals("\n"))
-                {
-                    break;
-                }
-            }
-            return new String(version);
-        }
-        catch(Exception e)
-        {
-            throw new BITalinoException(BITalinoErrorTypes.LOST_COMMUNICATION);
-        }
-    }
 
     private Frame[] decode(byte[] buffer) throws IOException, BITalinoException
     {
