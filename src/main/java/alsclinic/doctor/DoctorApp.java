@@ -8,7 +8,9 @@ import java.util.Scanner;
 public class DoctorApp {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        try(DoctorClient client=new DoctorClient("localhost",9000)){
+        String serverHost=System.getProperty("als.server.host","localhost");
+        int serverPort=Integer.getInteger("als.server.port",9000);
+        try(DoctorClient client=new DoctorClient(serverHost,serverPort)){
             System.out.println("Connected to hospital server.");
             boolean running= true;
             while(running){

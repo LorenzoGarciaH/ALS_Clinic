@@ -22,7 +22,7 @@ public class AdminConsole implements Runnable {
         }
 
         Path verifierFile = Path.of(
-                System.getProperty("user.home"), "als-admin.verifier");
+                System.getProperty("als.admin.verifier",Path.of(System.getProperty("user.home"), "als-admin.verifier").toString()));
 
         String command;
         while ((command = console.readLine("Enter command (start/exit): ")) != null) {

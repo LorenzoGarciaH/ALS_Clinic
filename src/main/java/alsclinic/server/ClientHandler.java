@@ -212,6 +212,12 @@ public class ClientHandler implements Runnable {
                 throw new IllegalArgumentException("ADC samples must be between 0 and 1023");
             }
         }
+        if (message.has("droppedFrames")){//no almacena valores incorrectos en el numero de tramas perdidas durante la adquisicion del vitalino
+            int droppedFrames=requiredInteger(message.get("droppedFrames"),"droppedFrames");
+            if (droppedFrames<0){
+                throw new IllegalArgumentException("droppedFrames must be a non-negative integer");
+            }
+        }
     }
 
     private static int requiredInteger(JsonElement value, String field) {
